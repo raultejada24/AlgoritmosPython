@@ -1,6 +1,7 @@
 import time
 import pyautogui
 
+## Intento de bot para responder preguntas en Wooclap
 
 def tomar_captura():
     """Toma captura de la pregunta en la pantalla"""
