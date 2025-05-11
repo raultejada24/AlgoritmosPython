@@ -1,5 +1,5 @@
 # =================================================================
-# ALGORITMO PARA "VIAJE ASEGURADO"
+# ALGORITMO dijkstra PARA "VIAJE ASEGURADO"
 # Objetivo: Encontrar el maná mínimo para viajar entre cualquier par de hogueras
 #           minimizando la mayor distancia entre parejas (diámetro del grafo)
 # Complejidad: O(N·(N+M)) para N ≤ 100, M ≤ 2000
