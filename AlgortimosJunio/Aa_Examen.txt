@@ -1,0 +1,7 @@
+Algoritmos (10)
+
+Grafos: BFS, DFS, TopSort
+Voraces: Mochila
+Voraces sobre Grafos: Dijkstra, Kruskal
+DyV: MergeSort, BinarySearch iterativo
+Vuelta atrás: N-Reinas, Laberinto
