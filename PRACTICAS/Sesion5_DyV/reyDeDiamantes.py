@@ -3,99 +3,82 @@
 # Objetivo: Eliminar de la rejilla cuadrada (N×N) al jugador cuyo identificador
 #           sea el menor >= al número atacado por el Rey de Diamantes.
 #           Finalmente, mostrar la rejilla con ‘X’ en posiciones eliminadas.
-# Complejidad: O(Q·(log(N^2) + N^2)) con eliminación en lista (práctico para N≤1000)
+# Complejidad: O(Q·log(N^2) + N^2) con lista ligada en vector (práctico para N≤1000)
 # =================================================================
+import sys
 
-## ITERATIVO
-def binary_search_iter(v, number, low, high):
-    """Búsqueda binaria iterativa. Devuelve índice si encuentra 'number',
-       o -1 si no existe."""
+def binary_search_lower_bound(v, number):
+    """Búsqueda binaria iterativa. Devuelve índice del primer elemento >= number,
+       o len(v) si no existe ninguno."""
     low, high = 0, len(v) - 1
+    pos = len(v)
     while low <= high:
         mid = (low + high) // 2
-        if v[mid] == number:
-            return mid        # Exacto
-        elif number < v[mid]:
-            high = mid - 1    # Mitad izquierda
+        if v[mid] >= number:
+            pos = mid
+            high = mid - 1
         else:
-            low = mid + 1     # Mitad derecha
-    return -1                  # No existe
-
-## RECURSIVO (inserción)
-def binary_search_rec(v, number, low, high):
-    """Búsqueda binaria recursiva. Devuelve índice si existe, o -low como
-       posición de inserción para el primer elemento > number."""
-    if low > high:
-        return -low            # Inserción en 'low'
-    mid = (low + high) // 2
-    if v[mid] == number:
-        return mid            # Exacto
-    elif number < v[mid]:
-        return binary_search_rec(v, number, low, mid - 1)
-    else:
-        return binary_search_rec(v, number, mid + 1, high)
+            low = mid + 1
+    return pos
 
 # =================================================================
-# LECTURA DE ENTRADA
+# LECTURA DE ENTRADA RÁPIDA
 # =================================================================
-N = int(input().strip())                   # Tamaño de la rejilla (N×N)
-# Leemos rejilla y almacenamos posiciones
-grid = []
-positions = []  # Lista de identificadores en orden ascendente
-for i in range(N):
-    row = list(map(int, input().split()))
-    grid.append(row)
-    positions.extend(row)
+data = sys.stdin.read().split()
+it = iter(data)
+N = int(next(it))
+# Leemos rejilla en lista plana
+grid_flat = [next(it) for _ in range(N * N)]
+# IDs vivos iniciales (mismos que grid_flat pero como enteros)
+alive_ids = list(map(int, grid_flat))
+M = len(alive_ids)
 
-# Copia dinámica de identificadores aún vivos
-alive_ids = positions.copy()
-
-# Marcador de eliminados en rejilla
-eliminated = [[False]*N for _ in range(N)]
-
-# Ataques del Rey de Diamantes
-attacks = list(map(int, input().split()))
+# Estructura de lista ligada por índices
+after = [i + 1 for i in range(M - 1)] + [None]
+before = [None] + [i for i in range(M - 1)]
+alive = [True] * M
+# Máscara para marcar eliminados
+erased = [False] * M
 
 # =================================================================
-# PROCESAMIENTO DE CADA ATAQUE
+# PROCESO DE ATAQUES
 # =================================================================
-for atk in attacks:
-    # Buscamos índice (exacto o inserción)
-    res = binary_search_rec(alive_ids, atk, 0, len(alive_ids)-1)
-    idx = res if res >= 0 else -res  # Primer ≥ atk
-    # Si idx fuera fuera de rango, no se elimina a nadie
-    if idx < len(alive_ids):
-        eliminated_id = alive_ids.pop(idx)
-        # Marcar en rejilla
-        # Buscar en grid (valores únicos):
-        for r in range(N):
-            for c in range(N):
-                if grid[r][c] == eliminated_id:
-                    eliminated[r][c] = True
-                    break
-            else:
-                continue
-            break
+for atk in map(int, it):
+    # 1) Buscar lower_bound en IDs vivos
+    idx = binary_search_lower_bound(alive_ids, atk)
+    # 2) Saltar a siguiente índice vivo
+    while idx is not None and idx < M and not alive[idx]:
+        idx = after[idx]
+    # 3) Si no hay objetivo válido, continuar
+    if idx is None or idx >= M:
+        continue
+    # 4) Eliminar jugador
+    alive[idx] = False
+    erased[idx] = True
+    p, n = before[idx], after[idx]
+    if p is not None:
+        after[p] = n
+    if n is not None:
+        before[n] = p
 
 # =================================================================
-# SALIDA: Imprimir rejilla resultado
+# SALIDA RÁPIDA
 # =================================================================
+out = []
+for i in range(M):
+    out.append('X' if erased[i] else grid_flat[i])
+
+# Imprimimos fila por fila
+write = sys.stdout.write
 for r in range(N):
-    line = []
-    for c in range(N):
-        if eliminated[r][c]:
-            line.append('X')
-        else:
-            line.append(str(grid[r][c]))
-    print(' '.join(line))
+    row = out[r * N:(r + 1) * N]
+    write(' '.join(row))
+    write('\n')
 
 # =================================================================
 # EXPLICACIÓN CLAVE:
-# 1. binary_search_iter(): búsqueda exacta (no usada aquí).
-# 2. binary_search_rec(): devuelve índice o -low para inserción, usado
-#    como lower_bound para primer valor ≥ ataque.
-# 3. alive_ids.pop(idx): elimina al jugador del conjunto vivo.
-# 4. Marcamos en "eliminated" la posición en rejilla para X en salida.
-# 5. Complejidad: Q·(O(log(N^2)) + O(N^2) buscar en grid) + impresión O(N^2).
-#    Apto para N≤1000 en tiempo práctico.
-# =================================================================
+# 1. Lectura por bloques y estructura plana para acelerar I/O.
+# 2. binary_search_lower_bound() en O(logM) para encontrar lower_bound.
+# 3. next/prev arrays para saltos O(1) y eliminaciones en O(1).
+# 4. Complejidad global O(Q·log(N^2) + N^2).
+

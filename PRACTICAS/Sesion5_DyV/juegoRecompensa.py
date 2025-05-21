@@ -46,9 +46,13 @@ names = {}                                   # Mapa ID → nombre de recompensa
 for _ in range(N):
     parts = input().split()
     I = int(parts[0])
-    S = parts[1]
+    S = ' '.join(parts[1:])  # Corregido: une todas las palabras del nombre
     ids.append(I)
     names[I] = S
+
+# <-- Ordenamos los IDs antes de usar búsquedas binarias y copias -->
+# (Según el problema, la entrada ya está ordenada, pero se mantiene por seguridad)
+ids.sort()
 
 # Copia de IDs disponibles para ir eliminando
 available = ids.copy()
