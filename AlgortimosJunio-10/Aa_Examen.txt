@@ -6,7 +6,12 @@ Voraces sobre Grafos: Dijkstra, Kruskal
 DyV: MergeSort, BinarySearch-iterativo
 Vuelta atrás: N-Reinas, Laberinto
 
-
-Mochila, Dijkstra, BinarySearch-iterativo, Laberinto
-
 Mayo 2024: Mochila, uno de DyV y uno de Backtracking
+
+
+Entendido, Aprender, Hacer aplicaciones
+- Mochila: Entendido
+- Dijkstra: Entendido
+- BinarySearch-iterativo: Entendido
+- Laberinto: Entendido
+- N-reinas: Entendido
