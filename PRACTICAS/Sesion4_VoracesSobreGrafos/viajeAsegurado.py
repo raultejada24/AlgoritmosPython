@@ -1,14 +1,17 @@
 # =================================================================
-# ALGORITMO dijkstra PARA "VIAJE ASEGURADO"
-# Objetivo: Encontrar el maná mínimo para viajar entre cualquier par de hogueras
-#           minimizando la mayor distancia entre parejas (diámetro del grafo)
-# Complejidad: O(N·(N+M)) para N ≤ 100, M ≤ 2000
+# ALGORITMO Dijkstra PARA "VIAJE ASEGURADO" (SIN heapq)
+# Objetivo: Encontrar el maná mínimo (diámetro) para poder teletransportarse
+#           entre cualquier pareja de hogueras.
+# Complejidad: O(N·(N + M)) para N ≤ 100, M ≤ 2000
 # =================================================================
 
-import sys
-
 def select_min(distances, visited):
-    """Selecciona el nodo no visitado con menor distancia actual"""
+    """
+    Selecciona el nodo no visitado con menor distancia actual.
+    distances: lista de distancias (1-indexada)
+    visited:    lista booleana de nodos ya procesados
+    devuelve:   índice del siguiente nodo a procesar
+    """
     min_dist = float('inf')
     next_node = 0
     for i in range(1, len(distances)):
@@ -17,63 +20,65 @@ def select_min(distances, visited):
             next_node = i
     return next_node
 
+
 def dijkstra(g, start):
-    """Calcula las distancias mínimas desde el nodo inicial a todos los demás"""
-    n = len(g) - 1  # Los nodos empiezan en 1
-    distances = [float('inf')] * (n + 1)  # Distancias iniciales (infinito)
-    visited = [False] * (n + 1)           # Nodos visitados
+    """
+    Calcula distancias mínimas desde 'start' a todos los demás nodos
+    usando Dijkstra sin heapq.
+    g: lista de adyacencia 1-indexada, g[u] = [(u, v, peso), ...]
+    start: nodo inicial (1-indexado)
+    retorna: lista de distancias (1-indexada)
+    """
+    n = len(g) - 1
+    distances = [float('inf')] * (n + 1)
+    visited   = [False] * (n + 1)
 
+    # inicialización
     distances[start] = 0
-    visited[start] = True
-
-    # Inicializa distancias de los nodos adyacentes al inicio
-    for u, v, w in g[start]:
+    visited[start]   = True
+    for _, v, w in g[start]:
         distances[v] = w
 
-    # Itera n-1 veces (para todos los nodos restantes)
+    # iterar para los otros n-1 nodos
     for _ in range(2, n + 1):
         u = select_min(distances, visited)
         visited[u] = True
-        # Actualiza distancias de los vecinos del nodo seleccionado
         for _, v, w in g[u]:
             if not visited[v] and distances[u] + w < distances[v]:
                 distances[v] = distances[u] + w
 
-    return distances  # solo necesitamos las distancias
+    return distances
 
-# =================================================================
-# LECTURA DE ENTRADA Y EJECUCIÓN
-# =================================================================
+# ===========================
+# LECTURA DE ENTRADA
+# ===========================
+import sys
+input_data = sys.stdin.read().split()
+it = iter(input_data)
 
-# Leer número de hogueras (N) y conexiones (M)
-N, M = map(int, sys.stdin.readline().split())
+N = int(next(it))  # número de hogueras
+M = int(next(it))  # número de conexiones
 
-# Construir grafo 1-indexado para Dijkstra
+# construimos grafo 1-indexado
 g = [[] for _ in range(N + 1)]
 for _ in range(M):
-    H1, H2, D = map(int, sys.stdin.readline().split())
-    # ajustar a 1-indexado
-    H1 += 1
-    H2 += 1
-    g[H1].append((H1, H2, D))
-    g[H2].append((H2, H1, D))
+    h1 = int(next(it)) + 1
+    h2 = int(next(it)) + 1
+    d  = int(next(it))
+    g[h1].append((h1, h2, d))
+    g[h2].append((h2, h1, d))
 
-# Para cada hoguera, calculamos distancias mínimas y recogemos la máxima
+# ===========================
+# CÁLCULO DEL DIÁMETRO
+# ===========================
 max_mana = 0
 for start in range(1, N + 1):
-    distances = dijkstra(g, start)
-    # actualizamos el maná necesario como la mayor distancia encontrada
-    for d in distances[1:]:
+    dist = dijkstra(g, start)
+    for d in dist[1:]:
         if d != float('inf') and d > max_mana:
             max_mana = d
 
-# Mostrar resultado: maná mínimo requerido (diámetro del grafo)
+# ===========================
+# SALIDA
+# ===========================
 print(max_mana)
-
-# =================================================================
-# EXPLICACIÓN CLAVE:
-# 1. dijkstra/select_min: obtenemos distancias cortas desde cada hoguera
-# 2. El maná requerido es la distancia máxima en todas las parejas
-# 3. O(N·(N+M)) suficiente para N ≤ 100, M ≤ 2000
-# =================================================================
-

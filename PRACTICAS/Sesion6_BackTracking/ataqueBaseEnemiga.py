@@ -1,111 +1,53 @@
-# =================================================================
-# ALGORITMO “YOR BRIAR: ATAQUE A LA BASE ENEMIGA”
-# Objetivo: Encontrar el número mínimo de pasos desde la entrada,
-#           eliminando todos los enemigos (en cualquier orden),
-#           y alcanzando la salida, sin repetir casilla.
-# Esquema:
-#   1. Identificar puntos clave: entrada (0), cada enemigo (1…E), salida (E+1).
-#   2. Para cada par de puntos clave, calcular la distancia mínima en la rejilla
-#      mediante BFS (tratando −2 como muro, −1 o 0 como transitables).
-#   3. Resolver TSP-Path con DP+bitmask sobre los E enemigos:
-#        DP[mask][u] = coste mínimo habiendo visitado el subconjunto 'mask'
-#                       de enemigos y acabando en punto clave u (1…E).
-#   4. Transición:
-#        Para cada v enemigo no en mask:
-#          DP[mask ∪ {v}][v] = min( DP[mask][u] + dist[u][v] )
-#   5. Respuesta:
-#        min_u ( DP[(1<<E)-1][u] + dist[u][E+1] )
-# Complejidad:
-#   – BFS: O((E+2)·N·M)
-#   – DP : O(2^E · E^2)
-#   Apto para N,M ≤ 10, E ≤ N·M ≤ 100.
-# =================================================================
+# Movimientos: derecha, abajo, izquierda, arriba
+dirs = [(0,1),(1,0),(0,-1),(-1,0)]
 
-from collections import deque
-import sys
+def backtrack(grid, visited, f, c, exit_f, exit_c, enemies_left, steps, best):
+    # Si llegamos a la salida con todos los enemigos eliminados
+    if f == exit_f and c == exit_c:
+        if enemies_left == 0 and steps < best[0]:
+            best[0] = steps
+        return
+    # Poda: si ya superamos la mejor solución
+    if steps >= best[0]:
+        return
+    # Explorar vecinos
+    for df, dc in dirs:
+        nf, nc = f + df, c + dc
+        # Comprobar límites
+        if not (0 <= nf < len(grid) and 0 <= nc < len(grid[0])):
+            continue
+        # No atravieses muros ni celdas ya visitadas
+        if grid[nf][nc] == -2 or visited[nf][nc]:
+            continue
+        # Marcar visita
+        visited[nf][nc] = True
+        was_enemy = False
+        if grid[nf][nc] == -1:
+            enemies_left -= 1
+            was_enemy = True
+        # Recursión
+        backtrack(grid, visited, nf, nc, exit_f, exit_c, enemies_left, steps+1, best)
+        # Restaurar
+        if was_enemy:
+            enemies_left += 1
+        visited[nf][nc] = False
 
-input = sys.stdin.readline
+# Lectura de entrada desde stdin
+N, M, E = map(int, input().split())         # dimensiones y número de enemigos
+sf, sc = map(int, input().split())          # fila y columna de entrada
+ef, ec = map(int, input().split())          # fila y columna de salida
 
-def bfs(start_r, start_c, grid, N, M):
-    """BFS desde (start_r,start_c) retorna matriz dist con dist a cada celda."""
-    dist = [[-1]*M for _ in range(N)]
-    q = deque()
-    dist[start_r][start_c] = 0
-    q.append((start_r, start_c))
-    while q:
-        r, c = q.popleft()
-        for dr, dc in ((1,0),(-1,0),(0,1),(0,-1)):
-            nr, nc = r+dr, c+dc
-            if 0 <= nr < N and 0 <= nc < M and grid[nr][nc] != -2 and dist[nr][nc] == -1:
-                dist[nr][nc] = dist[r][c] + 1
-                q.append((nr, nc))
-    return dist
+grid = [list(map(int, input().split()))     # matriz de la base
+        for _ in range(N)]
 
-# =================================================================
-# LECTURA DE ENTRADA Y PUNTOS CLAVE
-# =================================================================
-N, M, E = map(int, input().split())
-ent_r, ent_c = map(int, input().split())
-sal_r, sal_c = map(int, input().split())
+# Preparamos el array de visitados y contamos enemigos
+visited = [[False]*M for _ in range(N)]
+visited[sf][sc] = True
+initial_enemies = sum(val == -1 for row in grid for val in row)
 
-grid = [list(map(int, input().split())) for _ in range(N)]
+# Ejecutamos el backtracking
+best = [float('inf')]
+backtrack(grid, visited, sf, sc, ef, ec, initial_enemies, 1, best)
 
-# Lista de coordenadas de puntos clave: entrada + enemigos + salida
-points = [(ent_r, ent_c)]
-for r in range(N):
-    for c in range(M):
-        if grid[r][c] == -1:
-            points.append((r, c))
-points.append((sal_r, sal_c))
-
-K = len(points)   # = E + 2
-
-# =================================================================
-# PRECALCULAR DISTANCIAS ENTRE PUNTOS CLAVE
-# =================================================================
-# dist_mat[i][j]: distancia mínima de punto i a punto j
-dist_mat = [[0]*K for _ in range(K)]
-# Para cada punto clave i, BFS sobre toda la rejilla
-for i in range(K):
-    dr = bfs(points[i][0], points[i][1], grid, N, M)
-    for j in range(K):
-        dist_mat[i][j] = dr[points[j][0]][points[j][1]]
-        # Si es -1, no hay camino → imposible
-        if dist_mat[i][j] == -1:
-            # Si es entre dos enemigos o entre entrada/salida, no existe solución
-            # Marcarlo como “infinito”
-            dist_mat[i][j] = 10**9
-
-# =================================================================
-# DP + BITMASK PARA TSP-PATH
-# =================================================================
-FULL = (1 << E) - 1
-# DP[mask][u]: mínimo coste visitando 'mask' enemigos, acabando en enemigo índice u (1..E)
-dp = [ [10**9]*(E+2) for _ in range(1 << E) ]
-
-# Base: desde entrada (0) a cada enemigo i (punto índice i+1)
-for i in range(E):
-    dp[1 << i][i+1] = dist_mat[0][i+1]
-
-# Transiciones
-for mask in range(1 << E):
-    for u in range(1, E+1):
-        if not (mask & (1 << (u-1))):
-            continue  # u no está en el conjunto 'mask'
-        # Intentar ir a un enemigo v no visitado
-        for v in range(1, E+1):
-            if mask & (1 << (v-1)):
-                continue
-            new_mask = mask | (1 << (v-1))
-            dp[new_mask][v] = min(dp[new_mask][v],
-                                  dp[mask][u] + dist_mat[u][v])
-
-# Respuesta: completar ruta hacia salida (punto índice E+1)
-ans = 10**9
-for u in range(1, E+1):
-    ans = min(ans, dp[FULL][u] + dist_mat[u][E+1])
-
-# =================================================================
-# SALIDA
-# =================================================================
-print(ans)
+# Imprimimos el resultado
+print(best[0] if best[0] < float('inf') else -1)

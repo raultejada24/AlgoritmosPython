@@ -5,84 +5,81 @@
 # =================================================================
 
 def select_min(distances, visited):
-    """Selecciona el nodo no visitado con menor distancia actual"""
+    """
+    Selecciona el nodo no visitado con menor distancia actual.
+    distances: lista de distancias actuales
+    visited:    lista booleana marcando nodos ya procesados
+    devuelve:   índice del nodo con distancia mínima (o None si todos visitados)
+    """
     min_dist = float('inf')
     next_node = None
-    for node in range(len(distances)):
-        if not visited[node] and distances[node] < min_dist:
-            min_dist = distances[node]
-            next_node = node
+    for i, d in enumerate(distances):
+        if not visited[i] and d < min_dist:
+            min_dist = d
+            next_node = i
     return next_node
 
 
 def dijkstra(g, start, end):
-    """Calcula el camino mínimo desde 'start' hasta 'end'
-       Retorna: (distancia_total, camino)"""
+    """
+    Calcula el camino mínimo desde 'start' hasta 'end' sin usar heapq.
+    g:    lista de adyacencia, donde g[u] = [(v, peso), ...]
+    start,end: índices de vértices (0-indexado)
+    retorna: (distancia_total, camino_completo_como_lista)
+    """
     n = len(g)
-    distances = [float('inf')] * n  # Distancias iniciales
-    visited = [False] * n  # Nodos visitados
-    previous = [-1] * n  # Para reconstruir el camino
+    distances = [float('inf')] * n
+    visited   = [False] * n
+    previous  = [-1] * n
 
-    distances[start] = 0  # Distancia al nodo inicial es 0
+    distances[start] = 0
 
     for _ in range(n):
-        u = select_min(distances, visited)  # Nodo más cercano no visitado
-        if u == end:  # Llegamos al destino
+        u = select_min(distances, visited)
+        if u is None or distances[u] == float('inf'):
             break
-        if u is None:  # No hay camino
-            return float('inf'), []
-
+        if u == end:
+            break
         visited[u] = True
 
-        # Actualizar distancias de vecinos
-        for edge in g[u]:
-            v, w = edge[1], edge[2]
-            if distances[v] > distances[u] + w:
+        # Relajar cada arista (u -> v) de peso w
+        for v, w in g[u]:
+            if not visited[v] and distances[u] + w < distances[v]:
                 distances[v] = distances[u] + w
                 previous[v] = u
 
-    # Reconstruir camino
+    # Reconstrucción de la ruta de end a start
     path = []
-    node = end
-    while node != -1:
-        path.append(node)
-        node = previous[node]
+    cur = end
+    while cur != -1:
+        path.append(cur)
+        cur = previous[cur]
     path.reverse()
 
     return distances[end], path
 
 
 # =================================================================
-# LECTURA DE ENTRADA Y EJECUCIÓN
+# LECTURA DE ENTRADA
 # =================================================================
+# N: número de cervezas (nodos), M: número de conexiones (aristas)
+N, M = map(int, input().split())
 
-# Leer número de cervezas (N) y conexiones (M)
-N, M = map(int, input().strip().split())
-
-# Construir grafo (lista de adyacencia)
+# Construir grafo no dirigido
 g = [[] for _ in range(N)]
 for _ in range(M):
-    C1, C2, D = map(int, input().strip().split())
-    g[C1].append((C1, C2, D))  # Conexión en ambas direcciones
-    g[C2].append((C2, C1, D))
+    C1, C2, D = map(int, input().split())
+    g[C1].append((C2, D))
+    g[C2].append((C1, D))
 
-# Leer cervezas de inicio (S) y fin (E)
-S, E = map(int, input().strip().split())
+# Nodos de inicio y fin
+S, E = map(int, input().split())
 
-# Calcular y mostrar resultados
+# =================================================================
+# EJECUTAR DIJKSTRA Y SALIDA DE RESULTADOS
+# =================================================================
 distance, path = dijkstra(g, S, E)
+
+# Imprimir distancia y secuencia de nodos recorridos
 print(distance)
 print(' '.join(map(str, path)))
-
-# =================================================================
-# EXPLICACIÓN CLAVE:
-# 1. select_min(): Encuentra el nodo no visitado más cercano (O(N))
-# 2. previous[]: Reconstruye el camino desde E hasta S
-# 3. Parada temprana: Termina al llegar al nodo destino
-# 4. Grafo no dirigido: Conexiones añadidas en ambas direcciones
-# =================================================================
-# ¿POR QUÉ DIJKSTRA?
-# - Requerimiento: Camino mínimo entre DOS nodos específicos
-# - Características: Pesos no negativos (D ≥ 1) si no sería un BFS
-# - Necesidad: Mostrar distancia y camino exacto
-# =================================================================

@@ -14,7 +14,7 @@ def binary_search(v, number):
         else:
             low = mid + 1 # mitad derecha
 
-     return -low     # Si no se encuentra, retorna la posición donde debería insertarse como índice negativo
+    return -low     # Si no se encuentra, retorna la posición donde debería insertarse como índice negativo
 
 
 # Lista ordenada

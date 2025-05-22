@@ -10,8 +10,9 @@ Mayo 2024: Mochila, uno de DyV y uno de Backtracking
 
 
 Entendido, Aprender, Hacer aplicaciones
-- Mochila: Entendido
-- Dijkstra: Entendido
-- BinarySearch-iterativo: Entendido
-- Laberinto: Entendido
-- N-reinas: Entendido
+
+- Mochila: Entendido,
+- Dijkstra: Entendido,
+- BinarySearch-iterativo: Entendido,
+- Laberinto: Entendido,
+- N-reinas: Entendido,

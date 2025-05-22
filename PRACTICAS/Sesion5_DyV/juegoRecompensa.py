@@ -1,14 +1,3 @@
-# =================================================================
-# ALGORITMO PARA "JUEGO DE RECOMPENSA" (sin bisect ni sys)
-# Objetivo: Asignar rápidamente la recompensa de la caja elegida
-#           o la más cercana disponible en caso de colisión
-# Complejidad: O(N + C·(log N + N)) para N cajas y C jugadores
-#    – Preprocesado: O(N) lectura y construcción de estructuras
-#    – Cada consulta:
-#        • Búsqueda binaria exacta: O(log N)
-#        • Búsqueda binaria de inserción: O(log N)
-#        • Eliminación de la caja asignada: O(N) (N ≤ 5000)
-# =================================================================
 
 def binary_search_exact(v, key):
     """Búsqueda binaria iterativa.
@@ -24,7 +13,6 @@ def binary_search_exact(v, key):
             low = mid + 1   # Mitad derecha
     return -1               # No existe
 
-
 def lower_bound(v, key):
     """Devuelve la primera posición i en v tal que v[i] ≥ key.
        Si todas las entradas < key, retorna len(v)."""
@@ -37,9 +25,6 @@ def lower_bound(v, key):
             high = mid
     return low
 
-# =================================================================
-# LECTURA DE ENTRADA
-# =================================================================
 N = int(input().strip())                     # Nº de cajas
 ids   = []                                   # Lista de IDs (ordenada)
 names = {}                                   # Mapa ID → nombre de recompensa
@@ -59,9 +44,6 @@ available = ids.copy()
 
 C = int(input().strip())                     # Nº de participantes
 
-# =================================================================
-# PROCESAMIENTO DE CADA PARTICIPANTE
-# =================================================================
 for _ in range(C):
     R = int(input().strip())                 # ID elegido por el jugador
 

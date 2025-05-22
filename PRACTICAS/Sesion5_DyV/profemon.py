@@ -1,33 +1,44 @@
-def binary_search(profemon, start, end, search):
-    if start > end:
-        return start
-    else:
-        mid = (start + end) // 2
-
-        if search == profemon[mid]:
+def binary_search_iterative(arr, start, end, target):
+    """
+    Busca el índice donde se insertaría target en arr[start:end+1].
+    Si target está en arr, devuelve su posición; si no, devuelve
+    la posición de inserción (el primer índice > target).
+    """
+    low, high = start, end
+    while low <= high:
+        mid = (low + high) // 2
+        if arr[mid] == target:
             return mid
+        elif arr[mid] < target:
+            low = mid + 1
         else:
-            if search > profemon[mid]:
-                return binary_search(profemon, mid+1, end, search)
-            else:
-                return binary_search(profemon, start, mid-1, search)
+            high = mid - 1
+    # Si no lo encontramos, low es la posición de inserción
+    return low
 
+# Lectura de datos
+n, students = map(int, input().split())
+profemon = sorted(map(int, input().split()))
 
-n, students = map(int, input().strip().split())
-profemon = sorted(list(map(int, input().strip().split())))
-max_profemon = 0
-best_student = []
+max_count = 0
+best_students = []
+
 for _ in range(students):
-    stu_id, p1, p2 = map(int, input().strip().split())
-    p1_idx = binary_search(profemon, 0, n-1, p1)
-    p2_idx = binary_search(profemon, 0, n-1, p2)
-    if max_profemon < p2_idx-p1_idx+1:
-        max_profemon = p2_idx-p1_idx+1
-        best_student = []
-        best_student.append(stu_id)
-    elif max_profemon == p2_idx-p1_idx+1:
-        best_student.append(stu_id)
-for s in best_student:
-    print(str(s), end=" ")
-print()
-print(str(max_profemon))
+    stu_id, p1, p2 = map(int, input().split())
+
+    # Índice de inserción / hallazgo para p1 y p2
+    p1_idx = binary_search_iterative(profemon, 0, n-1, p1)
+    p2_idx = binary_search_iterative(profemon, 0, n-1, p2)
+
+    # Número de profemon en el rango [p1, p2]
+    count = p2_idx - p1_idx + 1
+
+    if count > max_count:
+        max_count = count
+        best_students = [stu_id]
+    elif count == max_count:
+        best_students.append(stu_id)
+
+# Salida
+print(" ".join(map(str, best_students)))
+print(max_count)

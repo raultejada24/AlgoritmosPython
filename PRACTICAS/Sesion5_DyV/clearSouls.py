@@ -1,11 +1,3 @@
-# =================================================================
-# ALGORITMO DE BÚSQUEDA BINARIA PARA "CLEAR SOULS"
-# Objetivo: Para cada nivel del Caballero de Astora, determinar
-#           cuántos enemigos puede vencer y cuántos puntos
-#           obtendría, usando tu implementación de búsqueda binaria
-# Complejidad: O(M·logN) tras precálculo de suma acumulada
-# =================================================================
-
 
 def binary_search_iter(v, number, low, high):
     """Búsqueda binaria iterativa.
@@ -21,9 +13,6 @@ def binary_search_iter(v, number, low, high):
             high = mid - 1    # buscamos en mitad izquierda
     return result
 
-# =================================================================
-# LECTURA DE ENTRADA Y PREPROCESADO
-# =================================================================
 N = int(input().strip())                              # Nº enemigos
 levels = list(map(int, input().split()))              # Niveles (ordenados)
 
@@ -39,9 +28,6 @@ for i in range(1, N):
 
 M = int(input().strip())  # Nº casos de prueba
 
-# =================================================================
-# PROCESAMIENTO DE CADA CASO DE PRUEBA
-# =================================================================
 for _ in range(M):
     Q = int(input().strip())  # Nivel del Caballero
 
@@ -57,16 +43,4 @@ for _ in range(M):
         total_points  = prefix_sum[idx]       # Suma de niveles = puntos
         print(f"{total_enemies} {total_points}")
 
-# =================================================================
-# EXPLICACIÓN CLAVE:
-# 1. merge_sort() y quick_sort(): Para practicar; no necesarios en entrada ordenada.
-# 2. binary_search_iter(): Iterativa, encuentra el índice del último valor ≤ Q.
-# 3. binary_search_rec(): Recursiva, misma funcionalidad con convención de retorno.
-# 4. prefix_sum[]: Permite obtener la suma de niveles en O(1) tras O(N) de precálculo.
-# 5. Búsqueda binaria + prefijo = O(M·logN + N) → Apto para N ≤ 10^5, M ≤ 10^4.
-# =================================================================
-# ¿POR QUÉ BÚSQUEDA BINARIA?
-# - Listas ordenadas, sin repetidos.
-# - Cada consulta en O(logN), evitando recorrido lineal por consulta.
-# - Adecuado para ranking en modo arena de Clear Souls.
-# =================================================================
+

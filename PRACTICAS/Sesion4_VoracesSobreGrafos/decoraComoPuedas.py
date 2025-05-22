@@ -1,42 +1,62 @@
-from queue import PriorityQueue
-
-def dijkstra(g):
+def select_min(distances, visited):
     """
-    Implementación de Dijkstra para encontrar las distancias mínimas desde el nodo 0 (sofá).
-    - g: Grafo no dirigido representado como lista de adyacencia.
-    - Retorna: Lista de distancias mínimas desde el nodo 0 a todos los demás.
+    Similar a getBestItem: selecciona el índice del nodo no visitado
+    con menor distancia actual.
+    """
+    min_dist = float('inf')
+    next_node = None
+    for i in range(len(distances)):
+        if not visited[i] and distances[i] < min_dist:
+            min_dist = distances[i]
+            next_node = i
+    return next_node
+
+def dijkstra(g, start):
+    """
+    Dijkstra iterativo sin heapq, partiendo del nodo `start`.
+    g: lista de adyacencia 0-indexada, g[u] = [(v, peso), ...]
+    devuelve: lista `distances` con la distancia mínima desde `start` a cada nodo
     """
     n = len(g)
-    dist = [float('inf')] * n  # Inicializar distancias con infinito
-    dist[0] = 0  # La distancia al sofá (nodo 0) es 0
-    pq = PriorityQueue()
-    pq.put((0, 0))  # Cola de prioridad: (distancia, nodo)
+    distances = [float('inf')] * n
+    visited   = [False] * n
 
-    while not pq.empty():
-        du, u = pq.get()  # Extraer el nodo con la menor distancia actual
-        for v, dv in g[u]:  # Para cada vecino del nodo u
-            alt = du + dv  # Distancia alternativa: distancia actual + peso de la arista
-            if alt < dist[v]:  # Si encontramos un camino más corto
-                dist[v] = alt
-                pq.put((alt, v))  # Actualizar la cola de prioridad
-    return dist
+    # Inicialización
+    distances[start] = 0
+    visited[start]   = True
+    # Establece distancias directas desde el inicio
+    for v, w in g[start]:
+        distances[v] = w
+
+    # Procesar los otros n-1 nodos
+    for _ in range(1, n):
+        u = select_min(distances, visited)
+        if u is None:
+            break
+        visited[u] = True
+        # Relajar aristas salientes de u
+        for v, w in g[u]:
+            if not visited[v] and distances[u] + w < distances[v]:
+                distances[v] = distances[u] + w
+
+    return distances
 
 # --- Lectura de entrada ---
-n, m, aleg_time = map(int, input().strip().split())  # Número de habitaciones, puertas y tiempo máximo
-g = [[] for _ in range(n)]  # Inicializar grafo como lista de adyacencia
-
-# Construir grafo no dirigido (las puertas son bidireccionales)
+n, m, T = map(int, input().split())
+g = [[] for _ in range(n)]
 for _ in range(m):
-    u, v, d = map(int, input().strip().split())
+    u, v, d = map(int, input().split())
     g[u].append((v, d))
-    g[v].append((u, d))  # Añadir arista en ambas direcciones
+    g[v].append((u, d))
 
-# --- Calcular tiempo total de decoración ---
-dist = dijkstra(g)  # Distancias mínimas desde el sofá (nodo 0)
-total_time = sum(dist)  # Suma de todas las distancias mínimas (1 metro = 1 minuto)
+# --- Cálculo de tiempos mínimos desde el sofá (nodo 0) ---
+distances = dijkstra(g, 0)
 
-# --- Verificar si Aleg puede decorar a tiempo ---
-if total_time <= aleg_time:
-    print(total_time)  # Tiempo total necesario
+# Suma total de los tiempos de ida a cada habitación
+total_time = sum(distances)
+
+# --- Salida según pueda o no decorar a tiempo ---
+if total_time <= T:
+    print(total_time)
 else:
-    print("Aleg, ¡a decorar!")  # No llega a tiempo
+    print("Aleg, ¡a decorar!")
