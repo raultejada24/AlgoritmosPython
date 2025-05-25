@@ -9,7 +9,7 @@ Vuelta atrás: N-Reinas, Laberinto
 Mayo 2024: Mochila, uno de DyV y uno de Backtracking
 
 
-Entendido, Aprender, Hacer aplicaciones
+Aprender, Hacer aplicaciones
 
 - Mochila: Entendido,
 - Dijkstra: Entendido,
