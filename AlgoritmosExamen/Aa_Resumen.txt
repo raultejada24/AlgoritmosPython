@@ -1,0 +1,10 @@
+Algoritmos (10)
+
+Grafos: BFS, DFS, TopSort
+Voraces: Mochila
+Voraces sobre Grafos: Dijkstra, Kruskal
+DyV: MergeSort, BinarySearch-iterativo
+Vuelta atrás: N-Reinas, Laberinto
+
+Mayo 2024: Mochila, Uno de DyV y Uno de Backtracking
+
